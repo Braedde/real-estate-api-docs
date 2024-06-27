@@ -1,0 +1,261 @@
+openapi: 3.1.0
+info:
+  title: Real Estate API
+  description: API for uploading, analyzing, editing, updating, training, self-learning, and scanning real estate data from PDF and Excel files.
+  version: 1.0.0
+servers:
+  - url: https://kengptyarra.azurewebsites.net
+    description: Production server
+paths:
+  /upload:
+    post:
+      operationId: uploadFile
+      summary: Upload a file
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: File uploaded successfully
+        '400':
+          description: Invalid file format
+
+  /analyze:
+    get:
+      operationId: analyzeData
+      summary: Analyze data
+      responses:
+        '200':
+          description: Analysis results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  summary:
+                    type: string
+                  details:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        metric:
+                          type: string
+                        value:
+                          type: string
+        '404':
+          description: No file uploaded
+
+  /edit:
+    patch:
+      operationId: editData
+      summary: Edit data
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                cell:
+                  type: string
+                  example: "A1"
+                value:
+                  type: string
+      responses:
+        '200':
+          description: Data edited successfully
+        '400':
+          description: Invalid cell reference or value
+        '404':
+          description: No file uploaded
+
+  /update:
+    put:
+      operationId: updateData
+      summary: Update data
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: File updated successfully
+        '400':
+          description: Invalid file format or data
+        '404':
+          description: No file uploaded
+
+  /train:
+    post:
+      operationId: trainModel
+      summary: Train model
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Model trained successfully
+        '400':
+          description: Invalid file format or data
+
+  /self-learn:
+    post:
+      operationId: selfLearn
+      summary: Self-learn from feedback
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                feedback:
+                  type: string
+      responses:
+        '200':
+          description: Self-learning update applied successfully
+        '400':
+          description: Invalid feedback format or data
+
+  /scan:
+    post:
+      operationId: scanFile
+      summary: Scan and process file
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: File scanned and processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  text:
+                    type: string
+                  tables:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        sheetName:
+                          type: string
+                        data:
+                          type: array
+                          items:
+                            type: object
+                            additionalProperties: true
+        '400':
+          description: Invalid file format or data
+
+  /process-large-data:
+    post:
+      operationId: processLargeData
+      summary: Process large data
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: File processed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  rowCount:
+                    type: integer
+                    example: 500
+                  columnCount:
+                    type: integer
+                    example: 25
+                  data:
+                    type: array
+                    items:
+                      type: object
+                      additionalProperties: true
+        '400':
+          description: Invalid file format or data
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    ScanResponse:
+      type: object
+      properties:
+        text:
+          type: string
+        tables:
+          type: array
+          items:
+            type: object
+            properties:
+              sheetName:
+                type: string
+              data:
+                type: array
+                items:
+                  type: object
+                  additionalProperties: true
+    LargeDataResponse:
+      type: object
+      properties:
+        rowCount:
+          type: integer
+          example: 500
+        columnCount:
+          type: integer
+          example: 25
+        data:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
